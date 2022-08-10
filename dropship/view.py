@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
-from .models import Employee, Project, Issue
-from .serializers import EmployeeSerializer, ProjectSerializers, IssueSerializers
+from .models import Employee, Project, Issue, Sprint
+from .serializers import EmployeeSerializer, ProjectSerializers, IssueSerializers, SprintSerializers
 
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -9,7 +9,13 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_200_OK, HTTP_226_IM_USED, HTTP_202_ACCEPTED, HTTP_401_UNAUTHORIZED
+)
+from rest_framework.decorators import api_view, renderer_classes
 
 class CustomAuthToken(ObtainAuthToken):
 
@@ -54,3 +60,26 @@ class IssueView(viewsets.ModelViewSet):
     pagination_class = None
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class SprintView(viewsets.ModelViewSet):
+    queryset = Sprint.objects.all()
+    serializer_class = SprintSerializers
+    pagination_class = None
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+@api_view(('GET',))
+def getIssuesByProject(request,projectId):
+    issuesById=Issue.objects.filter(project__id=projectId)
+    print(issuesById)
+    iss=IssueSerializers(issuesById,many=True)
+    return Response(iss.data,status=HTTP_200_OK)
+
+@api_view(('GET',))
+def addLabel(request,data):
+    issuesById=Issue.objects.get(id=data.id)
+    
+    iss=IssueSerializers(issuesById,many=True)
+    return Response(iss.data,status=HTTP_200_OK)
+

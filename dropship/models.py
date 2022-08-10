@@ -1,4 +1,3 @@
-from operator import mod
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinLengthValidator
@@ -37,7 +36,25 @@ class Project(TimestampModel):
         User, on_delete=models.CASCADE, related_name="projectCreated")
 
     def __str__(self):
-        return "{0} {1}".format(self.code, self.title)
+        return "{0} {1}".format(self.title, self.code)
+
+
+class Sprint(models.Model):
+    title = models.CharField(max_length=128)
+    description = models.TextField()
+    startDate = models.DateField()
+    endDate = models.DateField()
+
+    START = "START"
+    STOP = "STOP"
+    TYPES = [(START, START), (STOP, STOP)]
+    type = models.CharField(max_length=8, choices=TYPES, null=True)
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="sprints")
+
+    def __str__(self):
+        return "{0}-{1} ".format(self.title, self.description)
 
 
 class Issue(TimestampModel):
@@ -59,12 +76,53 @@ class Issue(TimestampModel):
         User, on_delete=models.CASCADE, related_name="issuesReported")
     assignee = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="issuesAssigned", null=True)
-    '''
-    status=
-    labels=
-    watchers(users)=
-    worklog (logs)=
-    '''
+    sprint = models.ForeignKey(
+        Sprint, on_delete=models.CASCADE, related_name="issues")
+    Open = "Open"
+    InProgress = "InProgress"
+    InReview = "InReview"
+    CodeComplete = "CodeComplete"
+    QATesting = "QA Testing"
+    Done = "Done"
+
+    STATUS = [(Open, Open), (InProgress, InProgress), (InReview, InReview),
+              (CodeComplete, CodeComplete), (QATesting, QATesting), (Done, Done)]
+    status = models.CharField(
+        max_length=20, choices=STATUS, default=Open, null=False)
 
     def __str__(self):
-        return "{0}-{1}".format(self.project.code, self.title)
+        return "{0}-{1}".format(self.title, self.project.code)
+
+
+class Label(models.Model):
+    title = models.CharField(max_length=32)
+    issues = models.ManyToManyField(Issue, null=True, related_name="labels")
+
+
+class Comment(models.Model):
+    comment = models.TextField()
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comments")
+    issue = models.ForeignKey(
+        Issue, on_delete=models.CASCADE, related_name="comments")
+
+    def __str__(self):
+        return "{0}-{1} ".format(self.pk, self.issue)
+
+
+class TimeLog(models.Model):
+    date = models.DateField()
+    timeSpent = models.CharField(max_length=10)
+    issue = models.ForeignKey(
+        Issue, on_delete=models.CASCADE, related_name="timelog")
+    user = models.ManyToManyField(User, related_name="timelog")
+
+    def __str__(self):
+        return "{0}".format(self.time_spent)
+
+
+class watcher(models.Model):
+    issue = models.OneToOneField(
+        Issue, on_delete=models.CASCADE, null=True, related_name="watcher")
+    watchers = models.ManyToManyField(
+        User, null=True, related_name="issuedWatched")
