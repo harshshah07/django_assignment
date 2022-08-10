@@ -57,6 +57,10 @@ class Sprint(models.Model):
         return "{0}-{1} ".format(self.title, self.description)
 
 
+class Label(models.Model):
+    title = models.CharField(max_length=32)
+
+
 class Issue(TimestampModel):
     BUG = "BUG"
     TASK = "TASK"
@@ -89,14 +93,12 @@ class Issue(TimestampModel):
               (CodeComplete, CodeComplete), (QATesting, QATesting), (Done, Done)]
     status = models.CharField(
         max_length=20, choices=STATUS, default=Open, null=False)
+    labels = models.ManyToManyField(Label, related_name="issues")
+    watchers = models.ManyToManyField(
+        User, related_name="issuedWatched")
 
     def __str__(self):
         return "{0}-{1}".format(self.title, self.project.code)
-
-
-class Label(models.Model):
-    title = models.CharField(max_length=32)
-    issues = models.ManyToManyField(Issue, null=True, related_name="labels")
 
 
 class Comment(models.Model):
@@ -115,14 +117,8 @@ class TimeLog(models.Model):
     timeSpent = models.CharField(max_length=10)
     issue = models.ForeignKey(
         Issue, on_delete=models.CASCADE, related_name="timelog")
-    user = models.ManyToManyField(User, related_name="timelog")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="timelog", default="")
 
     def __str__(self):
         return "{0}".format(self.time_spent)
-
-
-class watcher(models.Model):
-    issue = models.OneToOneField(
-        Issue, on_delete=models.CASCADE, null=True, related_name="watcher")
-    watchers = models.ManyToManyField(
-        User, null=True, related_name="issuedWatched")

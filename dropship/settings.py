@@ -25,8 +25,6 @@ SECRET_KEY = 'zl8ln@6zi-t%%5=^53d%r+-u_u0d4(7c*%nyh(b*d$!2#@#2&j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -40,6 +38,7 @@ INSTALLED_APPS = [
     # External packages
     'rest_framework.authtoken',
     "rest_framework",
+    'django_filters',
     # Apps
     'dropship'
 ]
@@ -131,4 +130,9 @@ AUTH_USER_MODEL = "dropship.User"
 # REST framework settings
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_FILTER_BACKEND': ['django_filters.rest_framework.DjangoFilterBackend'],
 }

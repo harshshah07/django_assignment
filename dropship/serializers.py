@@ -45,12 +45,26 @@ class IssueSerializers(serializers.ModelSerializer):
         model = Issue
         fields = "__all__"
 
+
 class SprintSerializers(serializers.ModelSerializer):
     class Meta:
         model = Sprint
         fields = "__all__"
 
+
 class LabelSerializers(serializers.ModelSerializer):
     class Meta:
         model = Label
+        fields = "__all__"
+
+
+class CommentSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
+class TimeLogSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = TimeLog
         fields = "__all__"

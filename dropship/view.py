@@ -10,12 +10,16 @@ from rest_framework.settings import api_settings
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_200_OK, HTTP_226_IM_USED, HTTP_202_ACCEPTED, HTTP_401_UNAUTHORIZED
-)
+
 from rest_framework.decorators import api_view, renderer_classes
+from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.response import Response
+
+from dropship.roles import IsAdmin, IsProjectManager
+
 
 class CustomAuthToken(ObtainAuthToken):
 
@@ -44,6 +48,8 @@ class CustomAuthToken(ObtainAuthToken):
 class EmployeeView(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name', 'email']
 
 
 class ProjectView(viewsets.ModelViewSet):
@@ -51,7 +57,9 @@ class ProjectView(viewsets.ModelViewSet):
     serializer_class = ProjectSerializers
     pagination_class = None
     authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdmin]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'code', 'creator', 'description']
 
 
 class IssueView(viewsets.ModelViewSet):
@@ -60,26 +68,17 @@ class IssueView(viewsets.ModelViewSet):
     pagination_class = None
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'type', 'project',
+                        'sprint', 'reporter', 'assignee', 'status', 'labels']
 
 
 class SprintView(viewsets.ModelViewSet):
     queryset = Sprint.objects.all()
     serializer_class = SprintSerializers
-    pagination_class = None
+    pagination_class = [IsProjectManager]
     authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-@api_view(('GET',))
-def getIssuesByProject(request,projectId):
-    issuesById=Issue.objects.filter(project__id=projectId)
-    print(issuesById)
-    iss=IssueSerializers(issuesById,many=True)
-    return Response(iss.data,status=HTTP_200_OK)
-
-@api_view(('GET',))
-def addLabel(request,data):
-    issuesById=Issue.objects.get(id=data.id)
-    
-    iss=IssueSerializers(issuesById,many=True)
-    return Response(iss.data,status=HTTP_200_OK)
-
+    permission_classes = [IsProjectManager]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'startDate',
+                        'endDate', 'project', 'type', 'description']
