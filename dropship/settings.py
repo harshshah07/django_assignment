@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # External packages
+    'rest_framework.authtoken',
     "rest_framework",
     # Apps
     'dropship'
