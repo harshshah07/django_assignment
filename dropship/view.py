@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
-from .models import Employee, Project, Issue, Sprint
-from .serializers import EmployeeSerializer, ProjectSerializers, IssueSerializers, SprintSerializers
+from .models import Comment, Employee, Project, Issue, Sprint
+from .serializers import CommentSerializers, EmployeeSerializer, ProjectSerializers, IssueSerializers, SprintSerializers
 
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -82,3 +82,11 @@ class SprintView(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['title', 'startDate',
                         'endDate', 'project', 'type', 'description']
+
+class CommentView(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializers
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['comment','user','issue']
